@@ -6,14 +6,20 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const publicDir = path.join(__dirname, 'public');
+const downloadsDir = path.join(__dirname, 'downloads');
+
+// Ensure required directories exist
+if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+}
+if (!fs.existsSync(downloadsDir)) {
+    fs.mkdirSync(downloadsDir, { recursive: true });
+}
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-
-const downloadsDir = path.join(__dirname, 'downloads');
-if (!fs.existsSync(downloadsDir)) {
-    fs.mkdirSync(downloadsDir);
-}
+app.use(express.static(publicDir));
 
 app.post('/download', (req, res) => {
     const { url, quality } = req.body;
@@ -36,8 +42,9 @@ app.post('/download', (req, res) => {
 
 app.use('/downloads', express.static(downloadsDir));
 
+// Serve index.html for the root route
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(publicDir, 'index.html'));
 });
 
 app.listen(PORT, () => {
