@@ -43,8 +43,8 @@ app.post('/download', (req, res) => {
 app.use('/downloads', express.static(downloadsDir));
 
 // Serve index.html for the root route
-app.get('*', (req, res) => {
-    res.sendFile(path.join(publicDir, 'index.html'));
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'), { root: publicDir });
 });
 
 app.listen(PORT, () => {
