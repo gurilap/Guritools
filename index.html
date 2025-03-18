@@ -11,13 +11,19 @@
     input, select, button { padding: 10px; width: 90%; margin: 10px auto; display: block; }
     button { background: #007acc; color: white; border: none; cursor: pointer; font-size: 16px; }
     button:hover { background: #005f99; }
+    button:disabled { background: #cccccc; cursor: not-allowed; }
     #message { margin-top: 10px; font-weight: bold; }
+    .error { color: #e74c3c; }
+    .success { color: #2ecc71; }
+    .loading { color: #3498db; }
+    .url-error { color: #e74c3c; font-size: 12px; text-align: left; margin-left: 5%; margin-top: -5px; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>YouTube Downloader</h1>
-    <input type="url" id="url" placeholder="Enter YouTube URL">
+    <input type="url" id="url" placeholder="Enter YouTube URL" required>
+    <div id="url-error" class="url-error"></div>
     <select id="format">
       <option value="bestvideo+bestaudio/best">Best Quality (MP4)</option>
       <option value="bestaudio[ext=m4a]">Audio Only (M4A)</option>
@@ -26,25 +32,83 @@
       <option value="best[ext=webm]">WEBM (Video)</option>
       <option value="worst">Lowest Quality</option>
     </select>
-    <button onclick="download()">Download</button>
+    <button id="download-btn" onclick="download()">Download</button>
     <p id="message"></p>
   </div>
   <script>
+    const urlInput = document.getElementById('url');
+    const urlError = document.getElementById('url-error');
+    const downloadBtn = document.getElementById('download-btn');
+    
+    // Validate URL as user types
+    urlInput.addEventListener('input', validateUrl);
+    
+    function validateUrl() {
+      const url = urlInput.value.trim();
+      
+      if (!url) {
+        urlError.textContent = 'Please enter a URL';
+        downloadBtn.disabled = true;
+        return false;
+      }
+      
+      // Check if it's a valid URL
+      try {
+        new URL(url);
+        
+        // Check if it's a YouTube URL
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+          urlError.textContent = '';
+          downloadBtn.disabled = false;
+          return true;
+        } else {
+          urlError.textContent = 'Please enter a valid YouTube URL';
+          downloadBtn.disabled = true;
+          return false;
+        }
+      } catch (e) {
+        urlError.textContent = 'Please enter a valid URL';
+        downloadBtn.disabled = true;
+        return false;
+      }
+    }
+    
     async function download() {
-      const url = document.getElementById('url').value;
+      if (!validateUrl()) {
+        return;
+      }
+      
+      const url = document.getElementById('url').value.trim();
       const format = document.getElementById('format').value;
       const message = document.getElementById('message');
+      
+      // Disable the button and show loading message
+      downloadBtn.disabled = true;
       message.textContent = 'Downloading...';
-      const response = await fetch('/download', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, quality: format })
-      });
-      const result = await response.json();
-      if (result.success) {
-        message.innerHTML = `<a href="${result.file}" download>Click here to download</a>`;
-      } else {
-        message.textContent = 'Error: ' + result.error;
+      message.className = 'loading';
+      
+      try {
+        const response = await fetch('/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, quality: format })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          message.innerHTML = <a href="${result.file}" download>Click here to download</a>;
+          message.className = 'success';
+        } else {
+          message.textContent = 'Error: ' + result.error;
+          message.className = 'error';
+        }
+      } catch (error) {
+        message.textContent = 'Error: ' + error.message;
+        message.className = 'error';
+      } finally {
+        // Re-enable the button
+        downloadBtn.disabled = false;
       }
     }
   </script>
