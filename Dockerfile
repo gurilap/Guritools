@@ -23,9 +23,15 @@ RUN npm install
 # Copy all files
 COPY . .
 
-# Create directories and move index.html to public directory
+# Copy the cookies file
+COPY all_cookies.txt /app/all_cookies.txt
+
+# Create required directories
 RUN mkdir -p public downloads
 RUN cp index.html public/
+
+# Set permissions for cookies file
+RUN chmod 644 /app/all_cookies.txt
 
 # Expose port
 EXPOSE 4000
