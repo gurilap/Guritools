@@ -77,43 +77,45 @@
     }
     
     async function download() {
-      if (!validateUrl()) {
-        return;
-      }
-      
-      const url = document.getElementById('url').value.trim();
-      const format = document.getElementById('format').value;
-      const message = document.getElementById('message');
-      
-      // Disable the button and show loading message
-      downloadBtn.disabled = true;
-      message.textContent = 'Downloading...';
-      message.className = 'loading';
-      
-      try {
-        const response = await fetch('/download', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url, quality: format })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          message.innerHTML = <a href="${result.file}" download>Click here to download</a>;
-          message.className = 'success';
-        } else {
-          message.textContent = 'Error: ' + result.error;
-          message.className = 'error';
-        }
-      } catch (error) {
-        message.textContent = 'Error: ' + error.message;
-        message.className = 'error';
-      } finally {
-        // Re-enable the button
-        downloadBtn.disabled = false;
-      }
+  if (!validateUrl()) {
+    return;
+  }
+
+  const url = document.getElementById('url').value.trim();
+  const format = document.getElementById('format').value;
+  const message = document.getElementById('message');
+
+  // Disable the button and show loading message
+  downloadBtn.disabled = true;
+  message.textContent = 'Downloading...';
+  message.className = 'loading';
+
+  try {
+    const response = await fetch('/download', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, quality: format })
+    });
+
+    const result = await response.json();
+    console.log(result); // Debugging
+
+    if (result.success) {
+      message.innerHTML = `<a href="${result.file}" download>Click here to download</a>`;
+      message.className = 'success';
+    } else {
+      message.textContent = 'Error: ' + result.error;
+      message.className = 'error';
     }
+  } catch (error) {
+    message.textContent = 'Error: ' + error.message;
+    message.className = 'error';
+  } finally {
+    // Re-enable the button
+    downloadBtn.disabled = false;
+  }
+}
+
   </script>
 </body>
 </html>
