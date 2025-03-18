@@ -1,21 +1,25 @@
 FROM node:latest
 
+# Install Python and other dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install yt-dlp
+RUN pip3 install yt-dlp
+
 WORKDIR /app
 
-# Copy package.json and install dependencies
 COPY package.json ./
 RUN npm install
 
-# Copy the entire project files
 COPY . .
 
-# Ensure yt-dlp script has execution permissions
-RUN chmod +x /app/yt-dlp-master/yt-dlp
-
-# Create necessary directories
+# Create directories and move the HTML file to public directory
 RUN mkdir -p public downloads
 RUN cp index.html public/
 
 EXPOSE 4000
-
 CMD ["node", "index.js"]
