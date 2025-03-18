@@ -1,6 +1,6 @@
 FROM node:latest
 
-# Install Python, ffmpeg, and required dependencies
+# Install required dependencies
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
@@ -20,21 +20,17 @@ WORKDIR /app
 COPY package.json ./
 RUN npm install
 
-# Copy all files
+# Copy all files (including all_cookies.txt)
 COPY . .
 
-# Copy the cookies file
-COPY all_cookies.txt /app/all_cookies.txt
-
-# Create required directories
+# Ensure public and downloads directories exist
 RUN mkdir -p public downloads
+
+# Copy index.html to the public directory
 RUN cp index.html public/
 
-# Set permissions for cookies file
-RUN chmod 644 /app/all_cookies.txt
-
-# Expose port
+# Expose port 4000
 EXPOSE 4000
 
-# Start the app
+# Start the Node.js app
 CMD ["node", "index.js"]
