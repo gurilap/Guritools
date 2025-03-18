@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YouTube Downloader</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; color: #333; text-align: center; }
+    .container { margin: 50px auto; width: 90%; max-width: 600px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    h1 { background: #007acc; color: white; padding: 15px; border-radius: 8px 8px 0 0; }
+    input, select, button { padding: 10px; width: 90%; margin: 10px auto; display: block; }
+    button { background: #007acc; color: white; border: none; cursor: pointer; font-size: 16px; }
+    button:hover { background: #005f99; }
+    #message { margin-top: 10px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>YouTube Downloader</h1>
+    <input type="url" id="url" placeholder="Enter YouTube URL">
+    <select id="format">
+      <option value="bestvideo+bestaudio/best">Best Quality (MP4)</option>
+      <option value="bestaudio[ext=m4a]">Audio Only (M4A)</option>
+      <option value="bestaudio[ext=mp3]">Audio Only (MP3)</option>
+      <option value="best[ext=mp4]">MP4 (Video)</option>
+      <option value="best[ext=webm]">WEBM (Video)</option>
+      <option value="worst">Lowest Quality</option>
+    </select>
+    <button onclick="download()">Download</button>
+    <p id="message"></p>
+  </div>
+  <script>
+    async function download() {
+      const url = document.getElementById('url').value;
+      const format = document.getElementById('format').value;
+      const message = document.getElementById('message');
+      message.textContent = 'Downloading...';
+      const response = await fetch('/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, quality: format })
+      });
+      const result = await response.json();
+      if (result.success) {
+        message.innerHTML = `<a href="${result.file}" download>Click here to download</a>`;
+      } else {
+        message.textContent = 'Error: ' + result.error;
+      }
+    }
+  </script>
+</body>
+</html>
