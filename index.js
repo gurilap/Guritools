@@ -50,10 +50,36 @@ app.post('/download', (req, res) => {
     
     console.log('Executing command: ${command}');
     
-    exec(command, (error, stdout, stderr) => {
-        if (error) {
-            console.error('Download error:', stderr || error.message);
-            return res.status(500).json({ error: stderr || error.message });
+    console.log('Starting download for URL: ${url}');
+    
+    // Use spawn instead of exec to get real-time output
+    const { spawn } = require('child_process');
+    const downloadProcess = spawn('yt-dlp', [
+        '-f', formatOption,
+        '--merge-output-format', 'mp4',
+        '-o', outputPath,
+        url
+    ]);
+    
+    let stdoutData = '';
+    let stderrData = '';
+    
+    downloadProcess.stdout.on('data', (data) => {
+        stdoutData += data.toString();
+        console.log('stdout: ${data.toString()}');
+    });
+    
+    downloadProcess.stderr.on('data', (data) => {
+        stderrData += data.toString();
+        console.error('stderr: ${data.toString()}');
+    });
+    
+    downloadProcess.on('close', (code) => {
+        console.log('Download process exited with code ${code}');
+        
+        if (code !== 0) {
+            console.error('Download failed:', stderrData);
+            return res.status(500).json({ error: stderrData || 'Download failed' });
         }
         
         // Check if file exists after download
